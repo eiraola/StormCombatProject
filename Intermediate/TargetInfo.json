@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "StormCombatProject",
+			"Path": "C:\\Users\\emont\\Documents\\Unreal Projects\\StormCombatProject\\Source\\StormCombatProject.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "StormCombatProjectEditor",
+			"Path": "C:\\Users\\emont\\Documents\\Unreal Projects\\StormCombatProject\\Source\\StormCombatProjectEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}

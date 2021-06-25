@@ -1,0 +1,3 @@
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Definitions.StormCombatProject.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h

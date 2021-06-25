@@ -1,0 +1,2 @@
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Definitions.StormCombatProject.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Source\StormCombatProject\StormCombatProject.h

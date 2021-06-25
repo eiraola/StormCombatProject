@@ -1,0 +1,30 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "4.25",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "StormCombatProject",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"Core",
+				
+				"ProceduralMeshComponent",
+				"RenderCore",
+				"RHI",
+				"PhysicsCore",
+				"Text3D",
+				"Niagara"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "NiagaraExtras",
+			"Enabled": true
+		}
+	]
+}
