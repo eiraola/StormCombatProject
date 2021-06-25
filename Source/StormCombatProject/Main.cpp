@@ -10,6 +10,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Enemy.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NiagaraComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "TimerManager.h"
 
 // Sets default values
 AMain::AMain()
@@ -31,7 +36,12 @@ AMain::AMain()
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
-
+	specialParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("SpecialParticles"));
+	specialParticles->SetupAttachment(GetRootComponent());
+	specialParticles->SetVisibility(false);
+	ultimateParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("UltimateParticles"));
+	ultimateParticles->SetupAttachment(GetRootComponent());
+	ultimateParticles->SetVisibility(false);
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -46,6 +56,9 @@ AMain::AMain()
 	health = maxHealth;
 	chackra = maxChackra/2;
 	bIsChargingChackra = false;
+	bIsSpecialCharged = false;
+	bIsUltimateCharged = false;
+	dechargeTime = 1.0f;
 
 }
 
@@ -83,8 +96,10 @@ void AMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	LookToEnemy(DeltaTime);
-	HandleChackra(DeltaTime);
 	
+	if(GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(FKey("E"))>0.5f){
+		HandleChackra(DeltaTime);
+	}
 }
 
 
@@ -161,17 +176,50 @@ void AMain::LookToEnemy(float deltaTime){
 }
 
 void AMain::ChargeChackra(){
-	bIsChargingChackra = true;
-	//UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), chargeChacraParticles, GetActorLocation(), FRotator(0, 0, 0), FVector(1, 1, 1), false, true, ENCPoolMethod::FreeInPool, true);
+	
+	
 }
 void AMain::StopChargeChackra() {
-
+	if (!bIsChargingChackra) {
+		ChargeSpecial();
+		return;
+	}
 	bIsChargingChackra = false;
+	if (Auxiliar_Effect) {
+		Auxiliar_Effect->DestroyComponent();
+	}
 }
 void AMain::HandleChackra(float deltaTime) {
-
-	if(bIsChargingChackra){
-		chackra = (chackra>= maxChackra)?maxChackra: chackra += 5 * deltaTime;
-
+	if (NS_Chacra && !bIsChargingChackra ) {
+		Auxiliar_Effect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Chacra, GetActorLocation(), FRotator(0, 0, 0), FVector(0.5, 0.5, 0.5), false, true, ENCPoolMethod::FreeInPool, true);
+		bIsChargingChackra = true;
 	}
+	chackra = (chackra>= maxChackra)?maxChackra: chackra += 5 * deltaTime;
+	
+}
+void AMain::ChargeSpecial(){
+
+	if (bIsSpecialCharged) {
+		ChargeUltimate();
+		return;
+	}
+	GetWorldTimerManager().SetTimer(DechargeTimer, this, &AMain::Decharge, dechargeTime);
+	specialParticles->SetVisibility(true);
+	bIsSpecialCharged = true;
+}
+void AMain::ChargeUltimate() {
+	if (!bIsUltimateCharged) {
+		bIsUltimateCharged = true;
+		GetWorldTimerManager().ClearTimer(DechargeTimer);
+		GetWorldTimerManager().SetTimer(DechargeTimer, this, &AMain::Decharge, dechargeTime);
+		specialParticles->SetVisibility(false);
+		ultimateParticles->SetVisibility(true);
+	}
+}
+
+void AMain::Decharge() {
+	bIsSpecialCharged = false;
+	bIsUltimateCharged = false;
+	specialParticles->SetVisibility(false);
+	ultimateParticles->SetVisibility(false);
 }

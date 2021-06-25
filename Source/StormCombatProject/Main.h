@@ -23,6 +23,7 @@ class STORMCOMBATPROJECT_API AMain : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AMain();
+	FTimerHandle DechargeTimer;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 		float chackra;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
@@ -33,8 +34,12 @@ public:
 		float maxHealth;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Effects")
-	//class UNiagaraComponent* chargeChacraParticles;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects")
+	class UNiagaraSystem* NS_Chacra;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	class UParticleSystemComponent* specialParticles;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	class UParticleSystemComponent* ultimateParticles;
 
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -71,11 +76,17 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 private:
-	
+	class UNiagaraComponent* Auxiliar_Effect;
 	float bIsChargingChackra;
+	float bIsSpecialCharged;
+	float bIsUltimateCharged;
+	float dechargeTime;
+	void Decharge();
 	void SetGameEnemy();
 	void LookToEnemy(float deltaTime);
 	void ChargeChackra();
+	void ChargeSpecial();
+	void ChargeUltimate();
 	void StopChargeChackra();
 	void HandleChackra(float deltaTime);
 	
