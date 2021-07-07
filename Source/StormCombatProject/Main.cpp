@@ -2,6 +2,7 @@
 
 
 #include "Main.h"
+#include "Proyectile.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
@@ -15,6 +16,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "TimerManager.h"
+#include "Animation/AnimMontage.h"
 
 // Sets default values
 AMain::AMain()
@@ -59,6 +61,9 @@ AMain::AMain()
 	bIsSpecialCharged = false;
 	bIsUltimateCharged = false;
 	dechargeTime = 1.0f;
+	SetPlayerStatus(EPlayerStatus::EMS_Movement);
+	comboNumber = 0;
+	canHit = true;
 
 }
 
@@ -78,6 +83,9 @@ void AMain::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("Chackra", IE_Pressed, this, &AMain::ChargeChackra);
 	PlayerInputComponent->BindAction("Chackra", IE_Released, this, &AMain::StopChargeChackra);
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMain::Attack);
+	PlayerInputComponent->BindAction("Shuriken", IE_Pressed, this, &AMain::LaunchShuriken);
+	//PlayerInputComponent->BindAction("Shuriken", IE_Released, this, &AMain::StopChargeChackra);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMain::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMain::MoveRight);
@@ -116,6 +124,7 @@ void AMain::LookUpAtRate(float Rate)
 
 void AMain::MoveForward(float Value)
 {
+	if (playerStatus != EPlayerStatus::EMS_Movement) return;
 	if (bIsChargingChackra) return;
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
@@ -131,6 +140,7 @@ void AMain::MoveForward(float Value)
 
 void AMain::MoveRight(float Value)
 {
+	if (playerStatus != EPlayerStatus::EMS_Movement) return;
 	if (bIsChargingChackra) return;
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
@@ -222,4 +232,111 @@ void AMain::Decharge() {
 	bIsUltimateCharged = false;
 	specialParticles->SetVisibility(false);
 	ultimateParticles->SetVisibility(false);
+}
+
+bool AMain::setDamage_Implementation(float damage) {
+	health = health - damage;
+	return true;
+}
+void AMain::LaunchShuriken() {
+	if (playerStatus != EPlayerStatus::EMS_Movement) return;
+	SetPlayerStatus(EPlayerStatus::EMS_Shoot);
+	LookAtEnemy();
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance) {
+		if(animationMontage){
+			animInstance->Montage_Play(animationMontage, 1.0f);
+			animInstance->Montage_JumpToSection(FName("Shoot"), animationMontage);
+		}
+	}
+	UWorld* world = GetWorld();
+	FActorSpawnParameters SpawnParams;
+	FVector forward = GetShootSpawnPos();
+	if(ShurikenToSpawn){
+		if (world) {
+			AProyectile* proyectile = world->SpawnActor<AProyectile>(ShurikenToSpawn, forward, FRotator(0.f), SpawnParams);
+			if (proyectile) {
+				proyectile->SetTarget(LockOnObjective);
+			}
+		}
+	}
+	
+}
+void AMain::ShootEnd() {
+	SetPlayerStatus(EPlayerStatus::EMS_Movement);
+	comboNumber = 0;
+	canHit = true;
+}
+FRotator  AMain::GetLookAtRotationYaw(FVector target) {
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), target);
+	FRotator LookAtRotationYaw(0.f, LookAtRotator.Yaw, 0.f);
+	return LookAtRotationYaw;
+
+}
+void AMain::Attack() {
+	if ((playerStatus != EPlayerStatus::EMS_Movement && comboNumber == 0)) {
+		UE_LOG(LogTemp, Warning, TEXT("NOPE"));
+		return;
+		
+	}
+	if (!canHit) return;
+	canHit = false;
+	SetPlayerStatus(EPlayerStatus::EMS_Attack);
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	LookAtEnemy();
+	if (animInstance) {
+		
+		if (animationMontage) {
+			switch (comboNumber)
+			{
+			case 0:
+				animInstance->Montage_Play(animationMontage, 1.0f);
+				animInstance->Montage_JumpToSection(FName("Punch"), animationMontage);
+				comboNumber++;
+				break;
+			case 1:
+				animInstance->Montage_Play(animationMontage, 1.0f);
+				animInstance->Montage_JumpToSection(FName("Punch2"), animationMontage);
+				comboNumber++;
+				break;
+			case 2:
+				animInstance->Montage_Play(animationMontage, 1.0f);
+				animInstance->Montage_JumpToSection(FName("Kick2"), animationMontage);
+				comboNumber++;
+				break;
+			case 3:
+				animInstance->Montage_Play(animationMontage, 1.0f);
+				animInstance->Montage_JumpToSection(FName("PunchCombo"), animationMontage);
+				comboNumber++;
+				break;
+			case 4:
+				animInstance->Montage_Play(animationMontage, 1.0f);
+				animInstance->Montage_JumpToSection(FName("Kick"), animationMontage);
+				comboNumber++;
+				break;
+			default:
+				break;
+			}
+			
+		}
+	}
+
+}
+
+void AMain::LookAtEnemy() {
+	FRotator LookAtYaw = GetLookAtRotationYaw(LockOnObjective->GetActorLocation());
+	SetActorRotation(LookAtYaw);
+}
+
+FVector AMain::GetShootSpawnPos(){
+	FVector forward = GetActorForwardVector();
+	forward.Normalize();
+	forward = forward * 300;
+	forward = forward + GetActorLocation();
+	return forward;
+}
+
+void AMain::CanCombo() {
+	
+	canHit = true;
 }

@@ -2,13 +2,22 @@
 
 #pragma once
 
+#include "Combatant.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Main.generated.h"
 
 
+UENUM(BlueprintType)
+enum class EPlayerStatus : uint8
+{
+	EMS_Movement UMETA(DeplayName = "Movement"),
+	EMS_Shoot UMETA(DeplayName = "Shoot"),
+	EMS_Attack UMETA(DeplayName = "Attack")
+
+};
 UCLASS()
-class STORMCOMBATPROJECT_API AMain : public ACharacter
+class STORMCOMBATPROJECT_API AMain : public ACharacter, public ICombatant
 {
 	GENERATED_BODY()
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -40,10 +49,20 @@ public:
 	class UParticleSystemComponent* specialParticles;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	class UParticleSystemComponent* ultimateParticles;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	class UAnimMontage* animationMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	EPlayerStatus playerStatus;
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
+	UFUNCTION()
+	virtual bool setDamage_Implementation(float damage) ;
+	UFUNCTION(BlueprintCallable)
+	void ShootEnd();
+	UFUNCTION(BlueprintCallable)
+	void CanCombo();
+	FORCEINLINE void SetPlayerStatus(EPlayerStatus status) { playerStatus = status; }
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -75,12 +94,16 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Volume")
+		TSubclassOf<class AProyectile> ShurikenToSpawn;
 private:
 	class UNiagaraComponent* Auxiliar_Effect;
 	float bIsChargingChackra;
 	float bIsSpecialCharged;
 	float bIsUltimateCharged;
 	float dechargeTime;
+	int comboNumber;
+	bool canHit;
 	void Decharge();
 	void SetGameEnemy();
 	void LookToEnemy(float deltaTime);
@@ -89,6 +112,11 @@ private:
 	void ChargeUltimate();
 	void StopChargeChackra();
 	void HandleChackra(float deltaTime);
+	void LaunchShuriken();
+	void Attack();
+	void LookAtEnemy();
+	FVector GetShootSpawnPos();
+	FRotator GetLookAtRotationYaw(FVector target);
 	
 };
 
