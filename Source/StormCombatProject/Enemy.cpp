@@ -2,12 +2,17 @@
 
 
 #include "Enemy.h"
-
+#include "Animation/AnimMontage.h"
 // Sets default values
 AEnemy::AEnemy()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	maxHealth = 100;
+	health = maxHealth;
+	maxChackra = 100;
+	chackra = maxChackra / 2;
 
 }
 
@@ -32,3 +37,18 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+bool AEnemy::setDamage_Implementation(float damage) {
+	health = health - damage;
+	
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	UE_LOG(LogTemp, Warning, TEXT("Ouch"));
+	if (animInstance) {
+		UE_LOG(LogTemp, Warning, TEXT("Ouch"));
+		if (animationMontage) {
+			UE_LOG(LogTemp, Warning, TEXT("Ouch2"));
+			animInstance->Montage_Play(animationMontage, 1.0f);
+			animInstance->Montage_JumpToSection(FName("Hit"), animationMontage);
+		}
+	}
+	return true;
+}

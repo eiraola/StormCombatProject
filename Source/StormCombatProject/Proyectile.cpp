@@ -23,6 +23,7 @@ AProyectile::AProyectile()
 	proyectile->SetupAttachment(GetRootComponent());
 	velocity = 110;
 	rotationSpeed = 500;
+	damage = 20.f;
 	
 
 }
@@ -75,14 +76,13 @@ void AProyectile::RotateToTarget(float DeltaTime){
 }
 void AProyectile::OnProyectileBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
 	if(OtherActor){
-		UE_LOG(LogTemp, Warning, TEXT("OtherActor"));
 		bool bImpl = OtherActor->GetClass()->ImplementsInterface(UCombatant::StaticClass());
 		
 		ICombatant* pCastingValue = Cast<ICombatant>(OtherActor);
 		if (pCastingValue) {
-			UE_LOG(LogTemp, Warning, TEXT("Patxi"));
 			
-			pCastingValue->Execute_setDamage(OtherActor,20.f);
+			pCastingValue->Execute_setDamage(OtherActor, damage);
+			Destroy();
 			//pCastingValue->setDamage_Implementation(20.0f);
 			
 			//ICombatant::Execute_setDamage(OtherActor,20.0f);
