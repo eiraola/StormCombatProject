@@ -1,10 +1,14 @@
 C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Definitions.StormCombatProject.h
 C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Source\StormCombatProject\Main.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Source\StormCombatProject\Combatant.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Inc\StormCombatProject\Combatant.generated.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\GameFramework/Character.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\GameFramework/RootMotionSource.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\RootMotionSource.generated.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\Character.generated.h
 C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Inc\StormCombatProject\Main.generated.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Source\StormCombatProject\Proyectile.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Inc\StormCombatProject\Proyectile.generated.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Camera/CameraComponent.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\CameraComponent.generated.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\GameFramework/CharacterMovementComponent.h
@@ -45,3 +49,80 @@ C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\W
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Kismet/KismetMathLibrary.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\KismetMathLibrary.generated.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Kismet\KismetMathLibrary.inl
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraComponent.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraCommon.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraTypes.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Engine/UserDefinedStruct.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\UserDefinedStruct.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraTypes.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraCore\Public\NiagaraCore.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraCommon.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraComponentPool.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraComponentPool.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraSystemInstance.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraEmitterInstance.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraDataSet.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\VectorVM\Public\VectorVM.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraDataSet.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraEvents.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraEvents.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraCollision.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraEmitterHandle.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraModule.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraEmitterHandle.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraEmitter.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraScript.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraShader\Public\NiagaraShared.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraCore\Public\NiagaraCompileHash.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\NiagaraCore\NiagaraCompileHash.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraCore\Public\NiagaraDataInterfaceBase.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraCore\Public\NiagaraMergeable.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\NiagaraCore\NiagaraMergeable.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\NiagaraCore\NiagaraDataInterfaceBase.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\NiagaraShader\NiagaraShared.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraShader\Public\NiagaraShader.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraShader\Public\NiagaraShaderType.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Renderer\Public\SceneRenderTargetParameters.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraParameters.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraParameters.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraScriptExecutionParameterStore.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraDataInterface.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraDataInterface.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraParameterStore.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraParameterStore.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraScriptExecutionParameterStore.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraScriptHighlight.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraScriptHighlight.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\NiagaraCore\Public\NiagaraCustomVersion.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraScript.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\INiagaraMergeManager.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraEffectType.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Public\InGamePerformanceTracker.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraPlatformSet.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraPlatformSet.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraEffectType.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraEmitter.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraScriptExecutionContext.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\RHI\Public\RHIGPUReadback.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraBoundsCalculator.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraSystem.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Particles/ParticleSystem.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Particles/ParticlePerfStats.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\ParticleSystem.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Classes\NiagaraParameterCollection.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraParameterCollection.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraUserRedirectionParameterStore.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraUserRedirectionParameterStore.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraSystem.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraDataInterfaceBindingInstance.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraVariant.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraVariant.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Particles/ParticleSystemComponent.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Particles/Emitter.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\Emitter.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\ParticleSystemComponent.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraComponent.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Source\Niagara\Public\NiagaraFunctionLibrary.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Plugins\FX\Niagara\Intermediate\Build\Win64\UE4Editor\Inc\Niagara\NiagaraFunctionLibrary.generated.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\Components/BoxComponent.h
+C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\BoxComponent.generated.h

@@ -3,7 +3,7 @@
   <ItemGroup>
     <None Include="..\..\StormCombatProject.uproject" />
     <Filter Include="Source">
-      <UniqueIdentifier>{F73506A8-B3F0-4688-8BE8-EB35B30A54EE}</UniqueIdentifier>
+      <UniqueIdentifier>{B8B07A12-6E45-407D-B5DE-1AE631B1D6D4}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Source\StormCombatProject.Target.cs">
       <Filter>Source</Filter>
@@ -11,8 +11,10 @@
     <None Include="..\..\Source\StormCombatProjectEditor.Target.cs">
       <Filter>Source</Filter>
     </None>
+    <None Include="..\..\.gitattributes" />
+    <None Include="..\..\.gitignore" />
     <Filter Include="Config">
-      <UniqueIdentifier>{E54D28A4-9E7F-4EB0-9E81-F111F31D6B4C}</UniqueIdentifier>
+      <UniqueIdentifier>{8FFF89F9-FB0B-4600-BF15-2A9AA661747C}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Config\DefaultEditor.ini">
       <Filter>Config</Filter>
@@ -30,8 +32,14 @@
       <Filter>Config</Filter>
     </None>
     <Filter Include="Source\StormCombatProject">
-      <UniqueIdentifier>{6B4FF2A4-46B6-499B-A786-A3AC915CB05C}</UniqueIdentifier>
+      <UniqueIdentifier>{FD498F18-0201-44A8-B99D-0992073705F6}</UniqueIdentifier>
     </Filter>
+    <ClCompile Include="..\..\Source\StormCombatProject\Combatant.cpp">
+      <Filter>Source\StormCombatProject</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\StormCombatProject\Combatant.h">
+      <Filter>Source\StormCombatProject</Filter>
+    </ClInclude>
     <ClCompile Include="..\..\Source\StormCombatProject\Enemy.cpp">
       <Filter>Source\StormCombatProject</Filter>
     </ClCompile>
@@ -54,6 +62,12 @@
       <Filter>Source\StormCombatProject</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\StormCombatProject\MyActor.h">
+      <Filter>Source\StormCombatProject</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\StormCombatProject\Proyectile.cpp">
+      <Filter>Source\StormCombatProject</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\StormCombatProject\Proyectile.h">
       <Filter>Source\StormCombatProject</Filter>
     </ClInclude>
     <None Include="..\..\Source\StormCombatProject\StormCombatProject.Build.cs">

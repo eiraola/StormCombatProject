@@ -2,6 +2,8 @@ C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\W
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h
 C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Source\StormCombatProject/Enemy.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Source\StormCombatProject\Combatant.h
+C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Inc\StormCombatProject\Combatant.generated.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\GameFramework/Character.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Source\Runtime\Engine\Classes\GameFramework/RootMotionSource.h
 C:\Program Files\Epic Games\UE_4.25\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\RootMotionSource.generated.h

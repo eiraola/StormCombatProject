@@ -13,9 +13,29 @@ enum class EPlayerStatus : uint8
 {
 	EMS_Movement UMETA(DeplayName = "Movement"),
 	EMS_Shoot UMETA(DeplayName = "Shoot"),
-	EMS_Attack UMETA(DeplayName = "Attack")
+	EMS_Attack UMETA(DeplayName = "Attack"),
+	EMS_Dodge UMETA(DeplayName = "Dodge")
 
 };
+
+UENUM(BlueprintType)
+enum class EHitElement : uint8
+{
+	EMS_None UMETA(DeplayName = "None"),
+	EMS_RHand UMETA(DeplayName = "RHand"),
+	EMS_LHand UMETA(DeplayName = "LHand"),
+	EMS_RLeg UMETA(DeplayName = "RLeg"),
+	EMS_LLeg UMETA(DeplayName = "LLeg")
+
+};
+UENUM(BlueprintType)
+enum class EDodgeDirection : uint8
+{
+	EDD_Left UMETA(DeplayName = "Left"),
+	EDD_Right UMETA(DeplayName = "Right"),
+	EDD_Back UMETA(DeplayName = "Back")
+};
+
 UCLASS()
 class STORMCOMBATPROJECT_API AMain : public ACharacter, public ICombatant
 {
@@ -28,11 +48,22 @@ class STORMCOMBATPROJECT_API AMain : public ACharacter, public ICombatant
 	class UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class AEnemy* LockOnObjective;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	//class UBoxComponent* RigthArmComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* RLeftArmComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* LeftArmComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* RigthLegComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* LeftLegComponent;
 
 public:
 	// Sets default values for this character's properties
 	AMain();
 	FTimerHandle DechargeTimer;
+	FTimerHandle ChargeTimer;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 		float chackra;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
@@ -52,16 +83,32 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	class UAnimMontage* animationMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	class UAnimMontage* dashAnimationMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	EPlayerStatus playerStatus;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	EHitElement hitElement;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool RHandActive;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool LHandActive;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool RLegActive;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool LLegActive;
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
+	bool canDamage;
 	UFUNCTION()
 	virtual bool setDamage_Implementation(float damage) ;
 	UFUNCTION(BlueprintCallable)
 	void ShootEnd();
 	UFUNCTION(BlueprintCallable)
 	void CanCombo();
+	UFUNCTION(BlueprintCallable)
+	void SetHitElement(EHitElement element);
 	FORCEINLINE void SetPlayerStatus(EPlayerStatus status) { playerStatus = status; }
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -87,7 +134,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	virtual void Jump() override;
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	/** Returns CameraBoom subobject **/
@@ -96,6 +143,19 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Volume")
 		TSubclassOf<class AProyectile> ShurikenToSpawn;
+	UFUNCTION()
+	virtual void RPunchOnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void LPunchOnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void RKickBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	virtual void LKickBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void HitEnemy(AActor* OtherActor, UPrimitiveComponent* OtherComp);
+	UFUNCTION(BlueprintCallable)
+	void DodgeEnd();
+	
 private:
 	class UNiagaraComponent* Auxiliar_Effect;
 	float bIsChargingChackra;
@@ -103,8 +163,17 @@ private:
 	float bIsUltimateCharged;
 	float dechargeTime;
 	int comboNumber;
+	float forwardInputValue;
+	float rightInputValue;
 	bool canHit;
+	bool isDashing;
+	bool dodgeAgain;
+	int attackNumber;
+	EDodgeDirection dodgeDirection;
+	void Dodge();
+	void DodgeAction();
 	void Decharge();
+	void StopCharge();
 	void SetGameEnemy();
 	void LookToEnemy(float deltaTime);
 	void ChargeChackra();
@@ -114,7 +183,9 @@ private:
 	void HandleChackra(float deltaTime);
 	void LaunchShuriken();
 	void Attack();
+	void SelectAttack();
 	void LookAtEnemy();
+	void DashToEnemy(float DeltaTime);
 	FVector GetShootSpawnPos();
 	FRotator GetLookAtRotationYaw(FVector target);
 	

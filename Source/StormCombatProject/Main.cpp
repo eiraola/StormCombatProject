@@ -17,11 +17,14 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "TimerManager.h"
 #include "Animation/AnimMontage.h"
+#include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AMain::AMain()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	// set our turn rates for input
@@ -47,31 +50,65 @@ AMain::AMain()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 500.0f; // The camera follows at this distance behind the character	
+	CameraBoom->SocketOffset = FVector(-130.0f, 100.0f, 100.0f);
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
+	CameraBoom->bDoCollisionTest = false;
+	//RigthArmComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Rhand"));
+	//RigthArmComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandS"));
+	//RigthArmComponent->SetWorldScale3D(FVector(0.2, 0.4, 0.2));
+	RLeftArmComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RLHand"));
+	RLeftArmComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandS"));
+	RLeftArmComponent->SetWorldScale3D(FVector(0.2, 0.4, 0.2));
+	LeftArmComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("LHand"));
+	LeftArmComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("LHandS"));
+	LeftArmComponent->SetWorldScale3D(FVector(0.2, 0.4, 0.2));
+
+	RigthLegComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RLeg"));
+	RigthLegComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RLegS"));
+	RigthLegComponent->SetWorldScale3D(FVector(0.2, 0.2, 0.4));
+	LeftLegComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("LLeg"));
+	LeftLegComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("LLegS"));
+	RigthLegComponent->SetWorldScale3D(FVector(0.2, 0.2, 0.4));
+
 
 	maxChackra = 100;
 	maxHealth = 100;
 	health = maxHealth;
-	chackra = maxChackra/2;
+	chackra = maxChackra / 2;
 	bIsChargingChackra = false;
 	bIsSpecialCharged = false;
 	bIsUltimateCharged = false;
 	dechargeTime = 1.0f;
+	SetHitElement(EHitElement::EMS_None);
 	SetPlayerStatus(EPlayerStatus::EMS_Movement);
 	comboNumber = 0;
 	canHit = true;
-
+	canDamage = true;
+	RHandActive = false;
+	LHandActive = false;
+	RLegActive = false;
+	LLegActive = false;
+	isDashing = false;
+	forwardInputValue = 0.0;
+	rightInputValue = 0.0;
+	dodgeAgain = false;
 }
-
 // Called when the game starts or when spawned
 void AMain::BeginPlay()
 {
 	Super::BeginPlay();
 	SetGameEnemy();
+	
+	//RigthArmComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::HitEnemy);
+	RLeftArmComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::RPunchOnBeginOverlap);
+	LeftArmComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::LPunchOnBeginOverlap);
+
+	RigthLegComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::RKickBeginOverlap);
+	LeftLegComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::LKickBeginOverlap);
 }
 
 void AMain::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -79,14 +116,14 @@ void AMain::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMain::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("Chackra", IE_Pressed, this, &AMain::ChargeChackra);
 	PlayerInputComponent->BindAction("Chackra", IE_Released, this, &AMain::StopChargeChackra);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMain::Attack);
 	PlayerInputComponent->BindAction("Shuriken", IE_Pressed, this, &AMain::LaunchShuriken);
 	//PlayerInputComponent->BindAction("Shuriken", IE_Released, this, &AMain::StopChargeChackra);
-
+	PlayerInputComponent->BindAction("Dodge", IE_Pressed, this, &AMain::Dodge);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMain::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMain::MoveRight);
 
@@ -97,6 +134,9 @@ void AMain::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("TurnRate", this, &AMain::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AMain::LookUpAtRate);
+	
+
+
 }
 
 // Called every frame
@@ -108,6 +148,10 @@ void AMain::Tick(float DeltaTime)
 	if(GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(FKey("E"))>0.5f){
 		HandleChackra(DeltaTime);
 	}
+	if (isDashing) {
+		DashToEnemy(DeltaTime);
+	}
+	
 }
 
 
@@ -124,6 +168,7 @@ void AMain::LookUpAtRate(float Rate)
 
 void AMain::MoveForward(float Value)
 {
+	forwardInputValue = Value;
 	if (playerStatus != EPlayerStatus::EMS_Movement) return;
 	if (bIsChargingChackra) return;
 	if ((Controller != NULL) && (Value != 0.0f))
@@ -140,6 +185,7 @@ void AMain::MoveForward(float Value)
 
 void AMain::MoveRight(float Value)
 {
+	rightInputValue = Value;
 	if (playerStatus != EPlayerStatus::EMS_Movement) return;
 	if (bIsChargingChackra) return;
 	if ((Controller != NULL) && (Value != 0.0f))
@@ -301,12 +347,12 @@ void AMain::Attack() {
 				break;
 			case 2:
 				animInstance->Montage_Play(animationMontage, 1.0f);
-				animInstance->Montage_JumpToSection(FName("Kick2"), animationMontage);
+				animInstance->Montage_JumpToSection(FName("Punch3"), animationMontage);
 				comboNumber++;
 				break;
 			case 3:
 				animInstance->Montage_Play(animationMontage, 1.0f);
-				animInstance->Montage_JumpToSection(FName("PunchCombo"), animationMontage);
+				animInstance->Montage_JumpToSection(FName("Punch4"), animationMontage);
 				comboNumber++;
 				break;
 			case 4:
@@ -321,6 +367,10 @@ void AMain::Attack() {
 		}
 	}
 
+}
+
+void AMain::SelectAttack()
+{
 }
 
 void AMain::LookAtEnemy() {
@@ -339,4 +389,126 @@ FVector AMain::GetShootSpawnPos(){
 void AMain::CanCombo() {
 	
 	canHit = true;
+}
+void AMain::HitEnemy(AActor* OtherActor, UPrimitiveComponent* OtherComp){
+	if (OtherActor) {
+		AEnemy* enemy = Cast<AEnemy>(OtherActor);
+		if (enemy != LockOnObjective) return;
+		bool bImpl = OtherActor->GetClass()->ImplementsInterface(UCombatant::StaticClass());
+		
+		ICombatant* pCastingValue = Cast<ICombatant>(OtherActor);
+		if (pCastingValue) {
+
+			pCastingValue->Execute_setDamage(OtherActor, 30.0);
+			
+			//pCastingValue->setDamage_Implementation(20.0f);
+
+			//ICombatant::Execute_setDamage(OtherActor,20.0f);
+
+		}
+	}
+
+}
+void AMain::SetHitElement(EHitElement element) {
+	hitElement = element;
+
+}
+void AMain::RPunchOnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
+	if (hitElement != EHitElement::EMS_RHand) return;
+	HitEnemy(OtherActor,  OtherComp);
+}
+
+void AMain::LPunchOnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
+	if (hitElement != EHitElement::EMS_LHand) return;
+	HitEnemy(OtherActor, OtherComp);
+}
+
+void AMain::RKickBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
+	if (hitElement != EHitElement::EMS_LLeg) return;
+	HitEnemy(OtherActor, OtherComp);
+}
+
+void AMain::LKickBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
+	if (hitElement != EHitElement::EMS_RLeg) return;
+	HitEnemy(OtherActor, OtherComp);
+}
+void AMain::DashToEnemy(float DeltaTime) {
+	FVector initRotation = GetActorLocation();
+	FVector endRotation = LockOnObjective->GetActorLocation();
+	FRotator targetLookAt = UKismetMathLibrary::FindLookAtRotation(initRotation, endRotation);
+	FRotator currentRotation = GetActorRotation();
+	FRotator targetRotationPoint = UKismetMathLibrary::RInterpTo(currentRotation, targetLookAt, DeltaTime, 4.5f);
+	FRotator targetRotation;
+	targetRotation.Pitch = currentRotation.Pitch;
+	targetRotation.Yaw = targetRotationPoint.Yaw;
+	targetRotation.Roll = currentRotation.Roll;
+	SetActorRotation(targetRotation);
+	FRotator LookAtYaw = GetLookAtRotationYaw(LockOnObjective->GetActorLocation());
+	SetActorRotation(LookAtYaw);
+
+	const FRotator YawRotation(0, LookAtYaw.Yaw, 0);
+
+	// get forward vector
+	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	AddMovementInput(Direction*800, 70000.0);
+
+}
+void AMain::Jump() {
+	
+	if ((bIsSpecialCharged || bIsUltimateCharged) && !isDashing){
+		//UCharacterMovementComponent* MovementPtr = Cast<UCharacterMovementComponent>(GetCharacterMovement()->MaxWalkSpeed);
+
+
+		GetCharacterMovement()->MaxWalkSpeed = 800;
+		GetWorldTimerManager().SetTimer(ChargeTimer, this, &AMain::StopCharge, 1.0f);
+		isDashing = true;
+	}
+	else {
+		Super::Jump();
+	}
+}
+void AMain::StopCharge() {
+	isDashing = false;
+}
+void AMain::Dodge() {
+	
+	if (playerStatus == EPlayerStatus::EMS_Dodge) {
+		dodgeAgain = true;
+		return;
+	}
+	DodgeAction();
+	
+}
+
+void AMain::DodgeAction()
+{
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (dashAnimationMontage)
+	{
+		playerStatus = EPlayerStatus::EMS_Dodge;
+		FVector initRotation = GetActorLocation();
+		FVector endRotation = LockOnObjective->GetActorLocation();
+		FRotator targetLookAt = UKismetMathLibrary::FindLookAtRotation(initRotation, endRotation);
+		FRotator targetRotation;
+		targetRotation.Pitch = targetLookAt.Pitch;
+		targetRotation.Yaw = targetLookAt.Yaw;
+		targetRotation.Roll = targetLookAt.Roll;
+		SetActorRotation(targetRotation);
+		FString anim = "DodgeB";
+		if (UKismetMathLibrary::Abs(forwardInputValue) < UKismetMathLibrary::Abs(rightInputValue)) {
+			anim = (rightInputValue > 0) ? "DodgeR" : "DodgeL";
+		}
+		animInstance->Montage_Play(dashAnimationMontage, 1.0f);
+		animInstance->Montage_JumpToSection(FName(anim), dashAnimationMontage);
+	}
+}
+
+void AMain::DodgeEnd()
+{
+	if (dodgeAgain)
+	{
+		dodgeAgain = false;
+		DodgeAction();
+	}
+	playerStatus = EPlayerStatus::EMS_Movement;
 }

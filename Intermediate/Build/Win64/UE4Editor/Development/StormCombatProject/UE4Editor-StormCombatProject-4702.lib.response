@@ -1,0 +1,30 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-StormCombatProject-4702.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\StormCombatProjectEditor\Development\Engine\SharedPCH.Engine.ShadowErrors.h.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Combatant.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Enemy.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Main.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\MainPlayerController.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\MyActor.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Proyectile.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\StormCombatProject.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\StormCombatProjectCharacter.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\StormCombatProjectGameMode.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Combatant.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Enemy.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Main.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\MainPlayerController.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\MyActor.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Proyectile.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\StormCombatProject.init.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\StormCombatProjectCharacter.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\StormCombatProjectGameMode.gen.cpp.obj"
+"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\Default.rc2.res"
+/OUT:"C:\Users\emont\Documents\Unreal Projects\StormCombatProject\Intermediate\Build\Win64\UE4Editor\Development\StormCombatProject\UE4Editor-StormCombatProject-4702.lib"
+/INCLUDE:IMPLEMENT_MODULE_StormCombatProject
