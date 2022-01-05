@@ -19,7 +19,10 @@
 #include "Animation/AnimMontage.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SkillBall.h"
 
 // Sets default values
 AMain::AMain()
@@ -57,6 +60,17 @@ AMain::AMain()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
 	CameraBoom->bDoCollisionTest = false;
+
+	SkillCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SkillCameraBoom"));
+	SkillCameraBoom->SetupAttachment(GetMesh());
+	SkillCameraBoom->TargetArmLength = 500.0f; // The camera follows at this distance behind the character	
+	SkillCameraBoom->SocketOffset = FVector(700.0f, 0.0f, 0.0f);
+	SkillCameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
+	SkillCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SkillCamera"));
+	SkillCamera->SetupAttachment(SkillCameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	SkillCamera->bUsePawnControlRotation = true; // Camera does not rotate relative to arm
+	SkillCameraBoom->bDoCollisionTest = false;
+	
 	//RigthArmComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Rhand"));
 	//RigthArmComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("RHandS"));
 	//RigthArmComponent->SetWorldScale3D(FVector(0.2, 0.4, 0.2));
@@ -80,6 +94,7 @@ AMain::AMain()
 	health = maxHealth;
 	chackra = maxChackra / 2;
 	bIsChargingChackra = false;
+	bIsChargingBreak = false;
 	bIsSpecialCharged = false;
 	bIsUltimateCharged = false;
 	dechargeTime = 1.0f;
@@ -96,13 +111,22 @@ AMain::AMain()
 	forwardInputValue = 0.0;
 	rightInputValue = 0.0;
 	dodgeAgain = false;
+	numAttacksBuffer = 0;
+	chargingChackraStart = 0.0f;
+	chargingBreakStart = 0.0f;
+	currentChackraChargingTime = 0.0f;
+	bIsChackraButtonPressed = false;
+	bIsTransformed = false;
+	skillBoomRotation = -30.f;
+	bIsTransforming = false;
+	
+	
 }
 // Called when the game starts or when spawned
 void AMain::BeginPlay()
 {
 	Super::BeginPlay();
 	SetGameEnemy();
-	
 	//RigthArmComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::HitEnemy);
 	RLeftArmComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::RPunchOnBeginOverlap);
 	LeftArmComponent->OnComponentBeginOverlap.AddDynamic(this, &AMain::LPunchOnBeginOverlap);
@@ -132,8 +156,8 @@ void AMain::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponen
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &AMain::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AMain::LookUpAtRate);
+	//PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	//PlayerInputComponent->BindAxis("LookUpRate", this, &AMain::LookUpAtRate);
 	
 
 
@@ -143,11 +167,11 @@ void AMain::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponen
 void AMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	SkillCameraMovement(DeltaTime);
+	LookToOwner();
 	LookToEnemy(DeltaTime);
-	
-	if(GetWorld()->GetFirstPlayerController()->GetInputKeyTimeDown(FKey("E"))>0.5f){
-		HandleChackra(DeltaTime);
-	}
+	SkillCameraMovement(DeltaTime);
+	HandleChackra(DeltaTime);	
 	if (isDashing) {
 		DashToEnemy(DeltaTime);
 	}
@@ -158,12 +182,12 @@ void AMain::Tick(float DeltaTime)
 void AMain::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	//AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 void AMain::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	//AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
 void AMain::MoveForward(float Value)
@@ -232,25 +256,83 @@ void AMain::LookToEnemy(float deltaTime){
 }
 
 void AMain::ChargeChackra(){
-	
-	
+	if (GetCharacterMovement()->IsFalling()) return;
+	bIsChackraButtonPressed = true;
+	chargingChackraStart = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+	currentChackraChargingTime = chargingChackraStart;
 }
 void AMain::StopChargeChackra() {
+	bIsChackraButtonPressed = false;
+	chargingChackraStart = 0.0f;
 	if (!bIsChargingChackra) {
 		ChargeSpecial();
 		return;
 	}
 	bIsChargingChackra = false;
+	bIsChargingBreak = false;
 	if (Auxiliar_Effect) {
 		Auxiliar_Effect->DestroyComponent();
 	}
+	if (Break_Effect) {
+		Break_Effect->DestroyComponent();
+	}
 }
 void AMain::HandleChackra(float deltaTime) {
-	if (NS_Chacra && !bIsChargingChackra ) {
-		Auxiliar_Effect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Chacra, GetActorLocation(), FRotator(0, 0, 0), FVector(0.5, 0.5, 0.5), false, true, ENCPoolMethod::FreeInPool, true);
-		bIsChargingChackra = true;
+
+	if (!bIsChackraButtonPressed) return;
+
+	if (UGameplayStatics::GetRealTimeSeconds(GetWorld()) - chargingChackraStart > 0.5f) {
+		if (NS_Chacra && !bIsChargingChackra) {
+			Auxiliar_Effect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Chacra, GetActorLocation() - FVector(0, 1, 0), FRotator(0, 0, 0), FVector(0.5, 0.5, 0.5), false, true, ENCPoolMethod::AutoRelease, true);
+			bIsChargingChackra = true;
+		}
+		chackra = (chackra >= maxChackra) ? maxChackra : chackra += 5 * deltaTime;
+		ChargeBreak();
 	}
-	chackra = (chackra>= maxChackra)?maxChackra: chackra += 5 * deltaTime;
+}
+void AMain::UseUltimate()
+{
+}
+
+void AMain::UseSpecialAttack()
+{
+	SetPlayerStatus(EPlayerStatus::EMS_Skill);
+	LookAtEnemy();
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animInstance) {
+		if (animationMontage) {
+			animInstance->Montage_Play(animationMontage, 1.0f);
+			animInstance->Montage_JumpToSection(FName("SkillBall"), animationMontage);
+		}
+	}
+}
+
+void AMain::EndSkillLaunch()
+{
+	SetPlayerStatus(EPlayerStatus::EMS_Movement);
+}
+
+void AMain::ChargeBreak(){
+	if (chackra != maxChackra || bIsTransformed) return;
+	if (bIsChargingBreak) {
+		if ((UGameplayStatics::GetRealTimeSeconds(GetWorld()) - chargingBreakStart > 0.5f))
+		{
+			bIsTransformed = true;
+			TransformToSpecial();
+		}
+	}
+	if (NS_Break && !bIsChargingBreak)
+	{
+		chargingBreakStart = UGameplayStatics::GetRealTimeSeconds(GetWorld());
+		
+		bIsChargingBreak = true;
+		Break_Effect = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Break, GetActorLocation() - FVector(0, 1, 0), FRotator(0, 0, 0), FVector(0.5, 0.5, 0.5), false, true, ENCPoolMethod::AutoRelease, true);
+		if (Auxiliar_Effect) {
+			Auxiliar_Effect->DestroyComponent();
+		}
+		
+	}
+		
 	
 }
 void AMain::ChargeSpecial(){
@@ -285,6 +367,7 @@ bool AMain::setDamage_Implementation(float damage) {
 	return true;
 }
 void AMain::LaunchShuriken() {
+	if (GetCharacterMovement()->IsFalling()) return;
 	if (playerStatus != EPlayerStatus::EMS_Movement) return;
 	SetPlayerStatus(EPlayerStatus::EMS_Shoot);
 	LookAtEnemy();
@@ -295,10 +378,14 @@ void AMain::LaunchShuriken() {
 			animInstance->Montage_JumpToSection(FName("Shoot"), animationMontage);
 		}
 	}
+	
+	
+}
+void AMain::SpawnShuriken() {
 	UWorld* world = GetWorld();
 	FActorSpawnParameters SpawnParams;
 	FVector forward = GetShootSpawnPos();
-	if(ShurikenToSpawn){
+	if (ShurikenToSpawn) {
 		if (world) {
 			AProyectile* proyectile = world->SpawnActor<AProyectile>(ShurikenToSpawn, forward, FRotator(0.f), SpawnParams);
 			if (proyectile) {
@@ -306,12 +393,26 @@ void AMain::LaunchShuriken() {
 			}
 		}
 	}
-	
+}
+void AMain::SpawnFireball()
+{
+	UWorld* world = GetWorld();
+	FActorSpawnParameters SpawnParams;
+	FVector forward = GetShootSpawnPos();
+	if (SkillToSpawn) {
+		if (world) {
+			AProyectile* proyectile = world->SpawnActor<AProyectile>(SkillToSpawn, forward, FRotator(0.f), SpawnParams);
+			if (proyectile) {
+				proyectile->SetTarget(LockOnObjective);
+				proyectile->SetRotationSpeed(0.0f);
+				proyectile->SetVelocity(500.0f);
+			}
+		}
+	}
 }
 void AMain::ShootEnd() {
 	SetPlayerStatus(EPlayerStatus::EMS_Movement);
-	comboNumber = 0;
-	canHit = true;
+	
 }
 FRotator  AMain::GetLookAtRotationYaw(FVector target) {
 	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), target);
@@ -320,18 +421,42 @@ FRotator  AMain::GetLookAtRotationYaw(FVector target) {
 
 }
 void AMain::Attack() {
+	if (GetCharacterMovement()->IsFalling()) return;
+	if (playerStatus == EPlayerStatus::EMS_Attack) {
+
+		numAttacksBuffer++;
+		return;
+	}
 	if ((playerStatus != EPlayerStatus::EMS_Movement && comboNumber == 0)) {
-		UE_LOG(LogTemp, Warning, TEXT("NOPE"));
+		
 		return;
 		
 	}
-	if (!canHit) return;
+	if (bIsSpecialCharged)
+	{
+		UseSpecialAttack();
+		return;
+	}
+	if (bIsUltimateCharged)
+	{
+		return;
+	}
+	SelectAttack();
+
+}
+
+void AMain::SelectAttack()
+{
+	//if (!canHit) return;
 	canHit = false;
 	SetPlayerStatus(EPlayerStatus::EMS_Attack);
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	LookAtEnemy();
 	if (animInstance) {
-		
+		if (FooshSound)
+		{
+			UGameplayStatics::PlaySound2D(this, FooshSound);
+		}
 		if (animationMontage) {
 			switch (comboNumber)
 			{
@@ -363,19 +488,54 @@ void AMain::Attack() {
 			default:
 				break;
 			}
-			
+
 		}
 	}
-
-}
-
-void AMain::SelectAttack()
-{
 }
 
 void AMain::LookAtEnemy() {
 	FRotator LookAtYaw = GetLookAtRotationYaw(LockOnObjective->GetActorLocation());
 	SetActorRotation(LookAtYaw);
+}
+
+void AMain::LookToOwner()
+{
+	FVector initRotation = FollowCamera->GetComponentLocation();
+	FVector endRotation = GetMesh()->GetComponentLocation();
+	FRotator targetLookAt = UKismetMathLibrary::FindLookAtRotation(initRotation, endRotation);
+	CameraBoom->SetWorldRotation(targetLookAt);
+}
+
+void AMain::TransformToSpecial()
+{
+	InitSkillCameraMovement();
+	FollowCamera->Deactivate();
+	SkillCamera->Activate();
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (dashAnimationMontage)
+	{
+		//StopChargeChackra();
+		
+		if (Auxiliar_Effect) {
+			Auxiliar_Effect->DestroyComponent();
+		}
+		if (Break_Effect) {
+			Break_Effect->DestroyComponent();
+		}
+		if(BreakMaterial)
+			GetMesh()->SetMaterial(0, BreakMaterial);
+		GetWorldTimerManager().SetTimer(BreakTimer, this, &AMain::BackToNormalTransformation, 30.0f);
+		animInstance->Montage_Play(dashAnimationMontage, 1.0f);
+		animInstance->Montage_JumpToSection(FName("Transformation"), dashAnimationMontage);
+	}
+	
+}
+
+void AMain::BackToNormalTransformation()
+{
+	if (InitialMaterial)
+		GetMesh()->SetMaterial(0, InitialMaterial);
+	bIsTransformed = false;
 }
 
 FVector AMain::GetShootSpawnPos(){
@@ -397,14 +557,14 @@ void AMain::HitEnemy(AActor* OtherActor, UPrimitiveComponent* OtherComp){
 		bool bImpl = OtherActor->GetClass()->ImplementsInterface(UCombatant::StaticClass());
 		
 		ICombatant* pCastingValue = Cast<ICombatant>(OtherActor);
+		if (PunchSound)
+		{
+			UGameplayStatics::PlaySound2D(this, PunchSound);
+		}
+		
 		if (pCastingValue) {
 
 			pCastingValue->Execute_setDamage(OtherActor, 30.0);
-			
-			//pCastingValue->setDamage_Implementation(20.0f);
-
-			//ICombatant::Execute_setDamage(OtherActor,20.0f);
-
 		}
 	}
 
@@ -412,6 +572,12 @@ void AMain::HitEnemy(AActor* OtherActor, UPrimitiveComponent* OtherComp){
 void AMain::SetHitElement(EHitElement element) {
 	hitElement = element;
 
+}
+void AMain::BackToMainCamera()
+{
+	SkillCamera->Deactivate();
+	FollowCamera->Activate();
+	bIsTransforming = false;
 }
 void AMain::RPunchOnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
 	if (hitElement != EHitElement::EMS_RHand) return;
@@ -433,6 +599,7 @@ void AMain::LKickBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* 
 	HitEnemy(OtherActor, OtherComp);
 }
 void AMain::DashToEnemy(float DeltaTime) {
+
 	FVector initRotation = GetActorLocation();
 	FVector endRotation = LockOnObjective->GetActorLocation();
 	FRotator targetLookAt = UKismetMathLibrary::FindLookAtRotation(initRotation, endRotation);
@@ -450,38 +617,98 @@ void AMain::DashToEnemy(float DeltaTime) {
 
 	// get forward vector
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	AddMovementInput(Direction*800, 70000.0);
+	AddMovementInput(Direction*800, 70000.0,true);
 
 }
-void AMain::Jump() {
+void AMain::InitSkillCameraMovement()
+{
 	
-	if ((bIsSpecialCharged || bIsUltimateCharged) && !isDashing){
-		//UCharacterMovementComponent* MovementPtr = Cast<UCharacterMovementComponent>(GetCharacterMovement()->MaxWalkSpeed);
-
-
-		GetCharacterMovement()->MaxWalkSpeed = 800;
-		GetWorldTimerManager().SetTimer(ChargeTimer, this, &AMain::StopCharge, 1.0f);
-		isDashing = true;
+	FRotator r = SkillCameraBoom->GetRelativeRotation();
+	r.Pitch = (-30.0f);
+	FHitResult* OutSweepHitResult = nullptr;
+	SkillCameraBoom->SetRelativeLocationAndRotation(SkillCameraBoom->GetRelativeLocation(), r, true, OutSweepHitResult, ETeleportType::TeleportPhysics);
+	bIsTransforming = true;
+}
+void AMain::SkillCameraMovement(float deltaTime)
+{
+	if (!bIsTransforming) return;
+	
+	FRotator r = SkillCameraBoom->GetRelativeRotation();
+	r.Pitch += 20 * deltaTime;
+	
+	if (r.Pitch >20)
+	{
+		r.Pitch =(20.0f);
+	}
+	FHitResult* OutSweepHitResult = nullptr;
+	SkillCameraBoom->SetRelativeLocationAndRotation(SkillCameraBoom->GetRelativeLocation(), r, true, OutSweepHitResult, ETeleportType::TeleportPhysics);
+	
+	
+}
+void AMain::MakeStepSound()
+{
+	if (StepSound)
+	{
+		UGameplayStatics::PlaySound2D(this, StepSound);
+	}
+	
+}
+void AMain::Jump() {
+	if (GetCharacterMovement()->IsFalling()) return;
+	if (playerStatus!= EPlayerStatus::EMS_Movement) return;
+	if ((bIsSpecialCharged || bIsUltimateCharged)){
+		BeginDash();
+			
 	}
 	else {
 		Super::Jump();
 	}
 }
+void AMain::BeginDash() {
+	SetPlayerStatus(EPlayerStatus::EMS_Dash);
+
+	//	//UCharacterMovementComponent* MovementPtr = Cast<UCharacterMovementComponent>(GetCharacterMovement()->MaxWalkSpeed);
+	//
+	//
+	//	GetCharacterMovement()->MaxWalkSpeed = 9000;
+	//	GetWorldTimerManager().SetTimer(ChargeTimer, this, &AMain::StopCharge, 3.0f);
+	//	isDashing = true;
+	LookAtEnemy();
+	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
+	if (animationMontage)
+	{
+		//StopChargeChackra();
+
+
+		//GetWorldTimerManager().SetTimer(BreakTimer, this, &AMain::BackToNormalTransformation, 30.0f);
+
+		animInstance->Montage_Play(animationMontage, 1.0f);
+		animInstance->Montage_JumpToSection(FName("attck"), animationMontage);
+	}
+}
+void AMain::StopDash() {
+	SetPlayerStatus(EPlayerStatus::EMS_Movement);
+}
 void AMain::StopCharge() {
 	isDashing = false;
+	GetCharacterMovement()->MaxWalkSpeed = 800;
 }
+
 void AMain::Dodge() {
-	
+	if (GetCharacterMovement()->IsFalling()) return;
 	if (playerStatus == EPlayerStatus::EMS_Dodge) {
 		dodgeAgain = true;
 		return;
 	}
+	numAttacksBuffer = 0;
+	AttackEnd();
 	DodgeAction();
 	
 }
 
 void AMain::DodgeAction()
 {
+	
 	UAnimInstance* animInstance = GetMesh()->GetAnimInstance();
 	if (dashAnimationMontage)
 	{
@@ -511,4 +738,18 @@ void AMain::DodgeEnd()
 		DodgeAction();
 	}
 	playerStatus = EPlayerStatus::EMS_Movement;
+}
+
+void AMain::AttackEnd()
+{
+	if (numAttacksBuffer > 0 && comboNumber <=3)
+	{
+		numAttacksBuffer--;
+		SelectAttack();
+		return;
+	}
+	SetPlayerStatus(EPlayerStatus::EMS_Movement);
+	comboNumber = 0;
+	numAttacksBuffer = 0;
+	canHit = true;
 }

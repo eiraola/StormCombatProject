@@ -14,7 +14,9 @@ enum class EPlayerStatus : uint8
 	EMS_Movement UMETA(DeplayName = "Movement"),
 	EMS_Shoot UMETA(DeplayName = "Shoot"),
 	EMS_Attack UMETA(DeplayName = "Attack"),
-	EMS_Dodge UMETA(DeplayName = "Dodge")
+	EMS_Dodge UMETA(DeplayName = "Dodge"),
+	EMS_Skill UMETA(DeplayName = "Skill"),
+	EMS_Dash UMETA(DeplayName = "Dash")
 
 };
 
@@ -47,6 +49,11 @@ class STORMCOMBATPROJECT_API AMain : public ACharacter, public ICombatant
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USpringArmComponent* SkillCameraBoom;
+	/** Skill camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCameraComponent* SkillCamera;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class AEnemy* LockOnObjective;
 	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	//class UBoxComponent* RigthArmComponent;
@@ -64,18 +71,25 @@ public:
 	AMain();
 	FTimerHandle DechargeTimer;
 	FTimerHandle ChargeTimer;
+	FTimerHandle BreakTimer;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
-		float chackra;
+	float chackra;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
-		float maxChackra;
+	float maxChackra;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
-		float health;
+	float health;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
-		float maxHealth;
+	float maxHealth;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects")
 	class UNiagaraSystem* NS_Chacra;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effects")
+	UNiagaraSystem* NS_Break;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material")
+	class UMaterialInstanceConstant* BreakMaterial;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material")
+	class UMaterialInstanceConstant* InitialMaterial;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
 	class UParticleSystemComponent* specialParticles;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
@@ -84,9 +98,9 @@ public:
 	class UAnimMontage* animationMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	class UAnimMontage* dashAnimationMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Status")
 	EPlayerStatus playerStatus;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	EHitElement hitElement;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
 	bool RHandActive;
@@ -109,6 +123,8 @@ public:
 	void CanCombo();
 	UFUNCTION(BlueprintCallable)
 	void SetHitElement(EHitElement element);
+	UFUNCTION(BlueprintCallable)
+	void BackToMainCamera();
 	FORCEINLINE void SetPlayerStatus(EPlayerStatus status) { playerStatus = status; }
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -141,8 +157,10 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Volume")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skills")
 		TSubclassOf<class AProyectile> ShurikenToSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skills")
+		TSubclassOf<class ASkillBall> SkillToSpawn;
 	UFUNCTION()
 	virtual void RPunchOnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
@@ -152,24 +170,64 @@ public:
 	UFUNCTION()
 	virtual void LKickBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
+	void UseUltimate();
+	UFUNCTION()
+	void UseSpecialAttack();
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Main | Sound")
+	class USoundCue* FooshSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Main | Sound")
+	USoundCue* StepSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Main | Sound")
+	USoundCue* PunchSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Main | Sound")
+	USoundCue* JumpSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Main | Sound")
+	USoundCue* LandSound;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Animation | State")
+	bool bIsChargingChackra;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, Category = "Animation | State")
+	bool bIsChargingBreak;
+	UFUNCTION()
 	void HitEnemy(AActor* OtherActor, UPrimitiveComponent* OtherComp);
 	UFUNCTION(BlueprintCallable)
 	void DodgeEnd();
-	
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+	UFUNCTION(BlueprintCallable)
+	void MakeStepSound();
+	UFUNCTION(BlueprintCallable)
+	void SpawnShuriken();
+	UFUNCTION(BlueprintCallable)
+	void SpawnFireball();
+	UFUNCTION(BlueprintCallable)
+	void EndSkillLaunch();
+	UFUNCTION(BlueprintCallable)
+	void StopDash();
 private:
 	class UNiagaraComponent* Auxiliar_Effect;
-	float bIsChargingChackra;
-	float bIsSpecialCharged;
-	float bIsUltimateCharged;
+	UNiagaraComponent* Break_Effect;
+
+	bool bIsSpecialCharged;
+	bool bIsUltimateCharged;
+	bool bIsTransforming;
+	float chargingChackraStart;
+	float chargingBreakStart;
+	float currentChackraChargingTime;
+	bool bIsChackraButtonPressed;
 	float dechargeTime;
 	int comboNumber;
+	float skillBoomRotation;
 	float forwardInputValue;
 	float rightInputValue;
 	bool canHit;
 	bool isDashing;
 	bool dodgeAgain;
-	int attackNumber;
+	bool bIsTransformed;
+	int numAttacksBuffer;
+	
 	EDodgeDirection dodgeDirection;
+	void ChargeBreak();
+	void BeginDash();
 	void Dodge();
 	void DodgeAction();
 	void Decharge();
@@ -185,7 +243,12 @@ private:
 	void Attack();
 	void SelectAttack();
 	void LookAtEnemy();
+	void LookToOwner();
+	void TransformToSpecial();
+	void BackToNormalTransformation();
 	void DashToEnemy(float DeltaTime);
+	void InitSkillCameraMovement();
+	void SkillCameraMovement(float deltaTime);
 	FVector GetShootSpawnPos();
 	FRotator GetLookAtRotationYaw(FVector target);
 	

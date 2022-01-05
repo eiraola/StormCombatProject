@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 #include "Animation/AnimMontage.h"
+#include "Math/UnrealMathUtility.h"
 // Sets default values
 AEnemy::AEnemy()
 {
@@ -47,7 +48,15 @@ bool AEnemy::setDamage_Implementation(float damage) {
 		if (animationMontage) {
 			UE_LOG(LogTemp, Warning, TEXT("Ouch2"));
 			animInstance->Montage_Play(animationMontage, 1.0f);
-			animInstance->Montage_JumpToSection(FName("Hit"), animationMontage);
+			int anim = FMath::RandRange(0, 1);
+			if (anim == 0)
+			{
+				animInstance->Montage_JumpToSection(FName("Hit"), animationMontage);
+			}
+			else {
+				animInstance->Montage_JumpToSection(FName("Hit2"), animationMontage);
+			}
+			
 		}
 	}
 	return true;

@@ -97,6 +97,21 @@ void AProyectile::SetTarget(class APawn* ptarget) {
 
 }
 
+void AProyectile::SetRotationSpeed(float ratio)
+{
+	rotationSpeed = ratio;
+}
+
+void AProyectile::SetVelocity(float speed)
+{
+	velocity = speed;
+}
+
+void AProyectile::SetDamage(float dam)
+{
+	damage = dam;
+}
+
 void AProyectile::RotateMesh(float DeltaTime) {
 	FRotator targetRotation;
 	FRotator currentRotation = proyectile->GetComponentRotation();

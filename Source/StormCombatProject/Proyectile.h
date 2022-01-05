@@ -38,12 +38,14 @@ public:
 	void OnProyectileBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void SetTarget(APawn* ptarget);
-
-	
+	void SetRotationSpeed(float ratio);
+	void SetVelocity(float speed);
+	void SetDamage(float dam);
 
 private:
 	void Advance(float DeltaTime);
 	void RotateToTarget(float DeltaTime);
 	void RotateMesh(float DeltaTime);
+	
 
 };
